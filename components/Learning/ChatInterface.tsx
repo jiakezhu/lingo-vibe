@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Volume2, Send, Save, KeyRound } from "lucide-react";
+import { Volume2, Send, Save, KeyRound, Sparkles, ArrowRight } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 interface WordData {
@@ -12,6 +12,27 @@ interface WordData {
     two_slang_sentences: string[];
     vibe_check_note: string;
 }
+
+const SUGGESTIONS: Record<string, { words: string[]; label: string }> = {
+    en: {
+        words: ["vibe", "slay", "ghosting", "lowkey", "flex", "cap", "salty", "shade"],
+        label: "Trending slang"
+    },
+    fr: {
+        words: ["kiffer", "bof", "galère", "ouf", "meuf", "balec", "chanmé", "relou"],
+        label: "Argot courant"
+    },
+    es: {
+        words: ["mola", "currar", "flipar", "tío", "guay", "majo", "pasta", "quedada"],
+        label: "Jerga popular"
+    },
+};
+
+const LANG_INFO: Record<string, { flag: string; name: string; accent: string }> = {
+    en: { flag: "🇺🇸", name: "English", accent: "text-blue-400" },
+    fr: { flag: "🇫🇷", name: "French", accent: "text-violet-400" },
+    es: { flag: "🇪🇸", name: "Spanish", accent: "text-rose-400" },
+};
 
 export default function ChatInterface() {
     const searchParams = useSearchParams();
@@ -25,6 +46,8 @@ export default function ChatInterface() {
     const [savedLocallyKey, setSavedLocallyKey] = useState("");
 
     const supabase = createClient();
+    const langInfo = LANG_INFO[lang] || LANG_INFO.en;
+    const suggestions = SUGGESTIONS[lang] || SUGGESTIONS.en;
 
     useEffect(() => {
         const key = localStorage.getItem("lingovibe_custom_key");
@@ -40,8 +63,10 @@ export default function ChatInterface() {
         window.speechSynthesis.speak(utterance);
     };
 
-    const handleSearch = async () => {
-        if (!input.trim()) return;
+    const handleSearch = async (word?: string) => {
+        const searchWord = word || input;
+        if (!searchWord.trim()) return;
+        if (word) setInput(word);
         setLoading(true);
         setResult(null);
 
@@ -49,7 +74,7 @@ export default function ChatInterface() {
             const res = await fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ word: input, lang, customKey: savedLocallyKey })
+                body: JSON.stringify({ word: searchWord, lang, customKey: savedLocallyKey })
             });
 
             if (res.status === 429) {
@@ -94,10 +119,14 @@ export default function ChatInterface() {
         }
     };
 
-    const langLabel = lang === "fr" ? "French" : lang === "es" ? "Spanish" : "English";
-
     return (
         <div className="flex flex-col flex-1 gap-4 relative z-10">
+            {/* Language Badge */}
+            <div className="flex items-center gap-2 mb-1">
+                <span className="text-2xl">{langInfo.flag}</span>
+                <span className={`text-sm font-semibold ${langInfo.accent}`}>{langInfo.name} Mode</span>
+            </div>
+
             {/* Search Bar */}
             <div className="flex gap-2">
                 <input
@@ -105,11 +134,11 @@ export default function ChatInterface() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                    placeholder={`Type a ${langLabel} word or phrase...`}
+                    placeholder={`Enter a word or phrase...`}
                     className="input-field flex-1"
                 />
                 <button
-                    onClick={handleSearch}
+                    onClick={() => handleSearch()}
                     disabled={loading}
                     className="btn-primary !p-3 !rounded-xl flex items-center justify-center disabled:opacity-50"
                 >
@@ -132,24 +161,71 @@ export default function ChatInterface() {
                             placeholder="AIzaSy..."
                             className="input-field flex-1 text-sm"
                         />
-                        <button onClick={saveCustomKey} className="btn-primary text-sm !px-4">
-                            Save
-                        </button>
+                        <button onClick={saveCustomKey} className="btn-primary text-sm !px-4">Save</button>
                     </div>
                 </div>
             )}
 
             {/* Loading */}
             {loading && (
-                <div className="flex-1 flex justify-center items-center">
+                <div className="flex-1 flex flex-col justify-center items-center gap-3">
                     <div className="spinner" />
+                    <p className="text-sm text-gray-500">Analyzing cultural context...</p>
+                </div>
+            )}
+
+            {/* Empty / Idle State */}
+            {!result && !loading && !showKeyPrompt && (
+                <div className="flex-1 flex flex-col gap-5 animate-fade-in-up">
+                    {/* How it works */}
+                    <div className="glass-card p-5">
+                        <div className="flex items-center gap-2 mb-3">
+                            <Sparkles size={16} className="text-violet-400" />
+                            <h3 className="text-sm font-semibold text-gray-200">How it works</h3>
+                        </div>
+                        <div className="space-y-3">
+                            {[
+                                { step: "1", text: "Enter any word or slang", color: "bg-blue-500/15 text-blue-400 border-blue-500/20" },
+                                { step: "2", text: "Get trilingual translations (EN · FR · ES)", color: "bg-violet-500/15 text-violet-400 border-violet-500/20" },
+                                { step: "3", text: "Discover cultural context & vibe", color: "bg-amber-500/15 text-amber-400 border-amber-500/20" },
+                            ].map(({ step, text, color }) => (
+                                <div key={step} className="flex items-center gap-3">
+                                    <span className={`w-7 h-7 rounded-lg ${color} border text-xs font-bold flex items-center justify-center flex-shrink-0`}>{step}</span>
+                                    <span className="text-sm text-gray-400">{text}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Suggested Words */}
+                    <div>
+                        <p className="text-xs uppercase tracking-[0.15em] text-gray-500 font-semibold mb-3">{suggestions.label}</p>
+                        <div className="flex flex-wrap gap-2">
+                            {suggestions.words.map((word) => (
+                                <button
+                                    key={word}
+                                    onClick={() => handleSearch(word)}
+                                    className="group flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-gray-300 hover:border-violet-500/30 hover:bg-violet-500/5 hover:text-violet-300 transition-all duration-200"
+                                >
+                                    {word}
+                                    <ArrowRight size={12} className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Fun Fact */}
+                    <div className="mt-auto bg-gradient-to-br from-violet-500/[0.06] to-blue-500/[0.03] border border-violet-500/10 rounded-xl p-4">
+                        <p className="text-xs text-gray-500 leading-relaxed">
+                            <span className="text-violet-400 font-medium">💡 Did you know?</span> The same word can carry completely different cultural "vibes" across languages. LingoVibe uses AI to decode these hidden nuances in real time.
+                        </p>
+                    </div>
                 </div>
             )}
 
             {/* Results */}
             {result && !loading && (
                 <div className="flex-1 overflow-y-auto pb-4 space-y-4 animate-fade-in-up">
-                    {/* Word Header */}
                     <div className="glass-card p-6">
                         <div className="flex justify-between items-start mb-5">
                             <div>
@@ -209,6 +285,15 @@ export default function ChatInterface() {
                             <p className="text-sm text-gray-300 leading-relaxed">{result.vibe_check_note}</p>
                         </div>
                     </div>
+
+                    {/* Search Another */}
+                    <button
+                        onClick={() => { setResult(null); setInput(""); }}
+                        className="w-full btn-ghost text-sm flex items-center justify-center gap-2"
+                    >
+                        <Sparkles size={14} />
+                        Search another word
+                    </button>
                 </div>
             )}
         </div>
