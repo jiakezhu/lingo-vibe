@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import LoginForm from "@/components/Auth/LoginForm";
 import { createClient } from "@/utils/supabase/client";
+import { KeyRound, LogOut, UserCircle } from "lucide-react";
 
 export default function SettingsPage() {
     const [apiKey, setApiKey] = useState("");
@@ -20,7 +21,7 @@ export default function SettingsPage() {
 
     const saveKey = () => {
         localStorage.setItem("lingovibe_custom_key", apiKey);
-        alert("API Key saved locally! ✨");
+        alert("API Key saved! ✨");
     };
 
     const handleLogout = async () => {
@@ -29,13 +30,17 @@ export default function SettingsPage() {
     };
 
     return (
-        <div className="p-4 flex flex-col h-full space-y-6">
-            <h1 className="text-3xl font-black mb-2 tracking-tighter">Settings</h1>
+        <div className="relative z-10 p-5 flex flex-col h-full space-y-5">
+            <h1 className="text-2xl font-bold text-white tracking-tight">Settings</h1>
 
-            <div className="bg-white p-6 rounded-xl neo-border neo-shadow">
-                <h2 className="text-xl font-bold mb-4">API Configuration</h2>
-                <p className="text-sm text-gray-600 mb-4 font-medium">
-                    Enter your Google Gemini API key to bypass the daily limit. Your key is stored securely in your browser's local storage and only sent directly to our proxy API.
+            {/* API Config */}
+            <div className="glass-card p-5">
+                <div className="flex items-center gap-2 mb-3">
+                    <KeyRound size={16} className="text-violet-400" />
+                    <h2 className="text-base font-semibold text-white">API Configuration</h2>
+                </div>
+                <p className="text-sm text-gray-400 mb-4 leading-relaxed">
+                    Enter your Google Gemini API key to bypass the daily limit. Your key is stored securely in your browser.
                 </p>
                 <div className="flex gap-2">
                     <input
@@ -43,32 +48,36 @@ export default function SettingsPage() {
                         value={apiKey}
                         onChange={(e) => setApiKey(e.target.value)}
                         placeholder="AIzaSy..."
-                        className="flex-1 neo-border rounded-lg px-4 py-3 bg-gray-50 focus:outline-none focus:ring-4 focus:ring-yellow-400 font-bold"
+                        className="input-field flex-1 text-sm"
                     />
-                    <button
-                        onClick={saveKey}
-                        className="bg-yellow-400 font-bold px-6 rounded-lg neo-border active:translate-y-1 active:shadow-[0px_0px_0px_#111827] shadow-[2px_2px_0px_#111827] transition-all"
-                    >
+                    <button onClick={saveKey} className="btn-primary text-sm !px-5">
                         Save
                     </button>
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-xl neo-border neo-shadow">
-                <h2 className="text-xl font-bold mb-4">Account</h2>
+            {/* Account */}
+            <div className="glass-card p-5">
+                <div className="flex items-center gap-2 mb-3">
+                    <UserCircle size={16} className="text-violet-400" />
+                    <h2 className="text-base font-semibold text-white">Account</h2>
+                </div>
                 {user ? (
                     <div>
-                        <p className="font-bold mb-4">Logged in as: <span className="text-blue-600">{user.email}</span></p>
+                        <p className="text-sm text-gray-400 mb-4">
+                            Logged in as <span className="text-blue-400 font-medium">{user.email}</span>
+                        </p>
                         <button
                             onClick={handleLogout}
-                            className="w-full bg-red-400 text-white font-bold py-3 px-4 rounded-lg neo-border active:translate-y-1 active:shadow-[0px_0px_0px_#111827] shadow-[2px_2px_0px_#111827] transition-all"
+                            className="w-full flex items-center justify-center gap-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 font-semibold py-3 px-4 rounded-xl hover:bg-rose-500/20 active:scale-[0.98] transition-all"
                         >
+                            <LogOut size={16} />
                             Sign Out
                         </button>
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        <p className="text-sm font-medium text-gray-600 mb-4">Sign in to save your learned words to your personal notebook!</p>
+                        <p className="text-sm text-gray-400">Sign in to save words to your personal notebook.</p>
                         <LoginForm />
                     </div>
                 )}

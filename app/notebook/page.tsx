@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import StudyMode from "@/components/Notebook/StudyMode";
 import StoryGenerator from "@/components/Notebook/StoryGenerator";
+import { BookOpen, Wand2 } from "lucide-react";
 
 export default function NotebookPage() {
     const [words, setWords] = useState<any[]>([]);
@@ -18,10 +19,9 @@ export default function NotebookPage() {
                 setLoading(false);
                 return;
             }
-            // Note: If 'saved_words' table isn't fully created or RLS blocks it, this fails gracefully.
             const { data, error } = await supabase.from("saved_words").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
             if (!error && data) {
-                setWords(data.map(row => row.data)); // Extracting the JSON
+                setWords(data.map(row => row.data));
             }
             setLoading(false);
         }
@@ -29,20 +29,31 @@ export default function NotebookPage() {
     }, []);
 
     return (
-        <div className="p-4 flex flex-col h-full space-y-6">
-            <h1 className="text-3xl font-black mb-2 tracking-tighter">Your Notebook</h1>
+        <div className="relative z-10 p-5 flex flex-col h-full space-y-5">
+            <h1 className="text-2xl font-bold text-white tracking-tight">Notebook</h1>
 
-            <div className="flex w-full bg-gray-100 rounded-lg p-1 neo-border">
+            {/* Tab Switcher */}
+            <div className="flex w-full bg-white/[0.03] rounded-xl p-1 border border-white/[0.06]">
                 <button
                     onClick={() => setActiveTab("study")}
-                    className={`flex-1 py-2 font-bold text-sm rounded-md transition-all ${activeTab === "study" ? "bg-white neo-shadow-sm border-2 border-gray-900" : "text-gray-500 hover:text-gray-900"}`}
+                    className={`flex-1 py-2.5 text-sm rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                        activeTab === "study"
+                            ? "bg-violet-500/15 text-violet-400 font-semibold border border-violet-500/20"
+                            : "text-gray-500 hover:text-gray-300 border border-transparent"
+                    }`}
                 >
+                    <BookOpen size={14} />
                     Flashcards
                 </button>
                 <button
                     onClick={() => setActiveTab("story")}
-                    className={`flex-1 py-2 font-bold text-sm rounded-md transition-all ${activeTab === "story" ? "bg-white neo-shadow-sm border-2 border-gray-900" : "text-gray-500 hover:text-gray-900"}`}
+                    className={`flex-1 py-2.5 text-sm rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                        activeTab === "story"
+                            ? "bg-violet-500/15 text-violet-400 font-semibold border border-violet-500/20"
+                            : "text-gray-500 hover:text-gray-300 border border-transparent"
+                    }`}
                 >
+                    <Wand2 size={14} />
                     Story Generator
                 </button>
             </div>
@@ -50,11 +61,13 @@ export default function NotebookPage() {
             <div className="flex-1 overflow-y-auto pb-8">
                 {loading ? (
                     <div className="flex justify-center items-center h-40">
-                        <div className="animate-spin w-10 h-10 neo-border rounded-full border-t-yellow-400"></div>
+                        <div className="spinner" />
                     </div>
                 ) : words.length === 0 ? (
-                    <div className="bg-yellow-50 border-2 border-yellow-200 p-6 rounded-xl text-center">
-                        <p className="font-bold text-gray-700">Your notebook is empty. Navigate strictly to Learn tab to save words!</p>
+                    <div className="glass-card p-8 text-center">
+                        <p className="text-4xl mb-3">📚</p>
+                        <p className="font-semibold text-gray-300 mb-1">Your notebook is empty</p>
+                        <p className="text-sm text-gray-500">Head to the Learn tab to save your first word!</p>
                     </div>
                 ) : (
                     <>

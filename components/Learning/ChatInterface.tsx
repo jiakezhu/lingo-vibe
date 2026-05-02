@@ -49,11 +49,7 @@ export default function ChatInterface() {
             const res = await fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    word: input,
-                    lang,
-                    customKey: savedLocallyKey
-                })
+                body: JSON.stringify({ word: input, lang, customKey: savedLocallyKey })
             });
 
             if (res.status === 429) {
@@ -63,7 +59,6 @@ export default function ChatInterface() {
             }
 
             if (!res.ok) throw new Error("API Error");
-
             const data = await res.json();
             setResult(data);
         } catch (err) {
@@ -83,19 +78,13 @@ export default function ChatInterface() {
         if (!result) return;
         const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-        // In local dev without DB setup it might fail gracefully or throw
         if (authError || !user) {
-            alert("Please login to save words to your notebook. Authentication is required.");
+            alert("Please login to save words to your notebook.");
             return;
         }
 
         const { error } = await supabase.from("saved_words").insert([
-            {
-                user_id: user.id,
-                word: result.target_word,
-                data: result,
-                lang
-            }
+            { user_id: user.id, word: result.target_word, data: result, lang }
         ]);
 
         if (error) {
@@ -105,105 +94,119 @@ export default function ChatInterface() {
         }
     };
 
+    const langLabel = lang === "fr" ? "French" : lang === "es" ? "Spanish" : "English";
+
     return (
-        <div className="flex flex-col flex-1 gap-4">
-            <div className="flex gap-2 relative z-10">
+        <div className="flex flex-col flex-1 gap-4 relative z-10">
+            {/* Search Bar */}
+            <div className="flex gap-2">
                 <input
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                    placeholder={`Enter a word or phrase in ${lang.toUpperCase()}...`}
-                    className="flex-1 neo-border rounded-xl px-4 py-3 bg-white font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400"
+                    placeholder={`Type a ${langLabel} word or phrase...`}
+                    className="input-field flex-1"
                 />
                 <button
                     onClick={handleSearch}
                     disabled={loading}
-                    className="bg-yellow-400 neo-border neo-shadow rounded-xl px-4 flex items-center justify-center hover:bg-yellow-300 active:translate-y-1 active:shadow-[0px_0px_0px_#111827] transition-all"
+                    className="btn-primary !p-3 !rounded-xl flex items-center justify-center disabled:opacity-50"
                 >
-                    <Send size={24} className="stroke-[3px]" />
+                    <Send size={20} />
                 </button>
             </div>
 
+            {/* Rate Limit Prompt */}
             {showKeyPrompt && (
-                <div className="bg-red-100 neo-border neo-shadow-sm p-4 rounded-xl mt-4">
-                    <h3 className="font-black text-lg flex items-center gap-2 mb-2">
-                        <KeyRound /> Daily Limit Reached!
+                <div className="glass-card p-5 border-rose-500/20 animate-fade-in-up">
+                    <h3 className="font-bold text-base flex items-center gap-2 mb-2 text-rose-400">
+                        <KeyRound size={18} /> Daily Limit Reached
                     </h3>
-                    <p className="text-sm font-medium mb-3">You've used your 2 free AI queries today. Enter your own Google Gemini API key to continue learning endlessly!</p>
+                    <p className="text-sm text-gray-400 mb-3">Enter your Google Gemini API key to continue learning.</p>
                     <div className="flex gap-2">
                         <input
                             type="password"
                             value={apiKey}
                             onChange={(e) => setApiKey(e.target.value)}
                             placeholder="AIzaSy..."
-                            className="flex-1 neo-border rounded-lg px-3 py-2 text-sm font-bold"
+                            className="input-field flex-1 text-sm"
                         />
-                        <button
-                            onClick={saveCustomKey}
-                            className="bg-gray-900 text-white font-bold px-4 rounded-lg active:scale-95 transition-transform"
-                        >
-                            Save Key
+                        <button onClick={saveCustomKey} className="btn-primary text-sm !px-4">
+                            Save
                         </button>
                     </div>
                 </div>
             )}
 
+            {/* Loading */}
             {loading && (
                 <div className="flex-1 flex justify-center items-center">
-                    <div className="animate-spin w-12 h-12 neo-border rounded-full border-t-yellow-400"></div>
+                    <div className="spinner" />
                 </div>
             )}
 
+            {/* Results */}
             {result && !loading && (
-                <div className="flex-1 overflow-y-auto pb-4 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                    <div className="bg-white neo-border neo-shadow p-5 rounded-xl">
-                        <div className="flex justify-between items-start mb-4">
+                <div className="flex-1 overflow-y-auto pb-4 space-y-4 animate-fade-in-up">
+                    {/* Word Header */}
+                    <div className="glass-card p-6">
+                        <div className="flex justify-between items-start mb-5">
                             <div>
-                                <h2 className="text-4xl font-black tracking-tighter capitalize">{result.target_word}</h2>
-                                <p className="text-lg font-bold text-gray-500">{result.chinese_def}</p>
+                                <h2 className="text-3xl font-bold tracking-tight text-white capitalize">{result.target_word}</h2>
+                                <p className="text-base text-gray-400 mt-1">{result.chinese_def}</p>
                             </div>
                             <div className="flex gap-2">
-                                <button onClick={() => playAudio(result.target_word, lang)} className="p-2 bg-blue-200 rounded-full neo-border active:scale-90 shadow-[2px_2px_0px_#111827] active:shadow-[0px_0px_0px_#111827] transition-all">
-                                    <Volume2 size={20} className="stroke-[3px]" />
+                                <button onClick={() => playAudio(result.target_word, lang)} className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 hover:bg-blue-500/20 active:scale-90 transition-all">
+                                    <Volume2 size={18} />
                                 </button>
-                                <button onClick={saveToNotebook} className="p-2 bg-yellow-400 rounded-full neo-border active:scale-90 shadow-[2px_2px_0px_#111827] active:shadow-[0px_0px_0px_#111827] transition-all">
-                                    <Save size={20} className="stroke-[3px]" />
+                                <button onClick={saveToNotebook} className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 hover:bg-violet-500/20 active:scale-90 transition-all">
+                                    <Save size={18} />
                                 </button>
                             </div>
                         </div>
 
-                        <div className="space-y-4 mt-6">
-                            <div className="bg-gray-50 p-4 rounded-lg border-2 border-gray-200">
-                                <h3 className="font-black text-xs uppercase tracking-widest text-gray-400 mb-2">Trilingual Map</h3>
-                                <div className="grid grid-cols-3 gap-2 text-sm font-bold">
-                                    <div className="p-2 bg-blue-100 rounded-md">EN: {result.trilingual_map?.en || "-"}</div>
-                                    <div className="p-2 bg-indigo-100 rounded-md">FR: {result.trilingual_map?.fr || "-"}</div>
-                                    <div className="p-2 bg-red-100 rounded-md">ES: {result.trilingual_map?.es || "-"}</div>
+                        {/* Trilingual Map */}
+                        <div className="mb-5">
+                            <h3 className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-3">Trilingual Map</h3>
+                            <div className="grid grid-cols-3 gap-2">
+                                <div className="lang-badge-en rounded-lg px-3 py-2.5 text-center">
+                                    <span className="text-[10px] uppercase tracking-wider opacity-60 block mb-0.5">EN</span>
+                                    <span className="text-sm font-semibold">{result.trilingual_map?.en || "-"}</span>
+                                </div>
+                                <div className="lang-badge-fr rounded-lg px-3 py-2.5 text-center">
+                                    <span className="text-[10px] uppercase tracking-wider opacity-60 block mb-0.5">FR</span>
+                                    <span className="text-sm font-semibold">{result.trilingual_map?.fr || "-"}</span>
+                                </div>
+                                <div className="lang-badge-es rounded-lg px-3 py-2.5 text-center">
+                                    <span className="text-[10px] uppercase tracking-wider opacity-60 block mb-0.5">ES</span>
+                                    <span className="text-sm font-semibold">{result.trilingual_map?.es || "-"}</span>
                                 </div>
                             </div>
+                        </div>
 
-                            <div>
-                                <h3 className="font-black text-xs uppercase tracking-widest text-gray-400 mb-2">Slang / Usage</h3>
-                                <ul className="space-y-2">
-                                    {result.two_slang_sentences?.map((sentence, idx) => (
-                                        <li key={idx} className="bg-yellow-50 p-3 rounded-lg border-2 border-yellow-200 font-medium text-sm flex gap-2 items-start">
-                                            <span className="text-yellow-500 font-bold">{idx + 1}.</span>
-                                            <span className="flex-1">{sentence}</span>
-                                            <button onClick={() => playAudio(sentence, lang)} className="shrink-0 text-gray-400 hover:text-gray-900 active:scale-90 transition-transform">
-                                                <Volume2 size={16} className="stroke-[3px]" />
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                        {/* Slang Sentences */}
+                        <div className="mb-5">
+                            <h3 className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-3">Usage & Slang</h3>
+                            <ul className="space-y-2">
+                                {result.two_slang_sentences?.map((sentence, idx) => (
+                                    <li key={idx} className="bg-white/[0.03] border border-white/[0.06] p-3.5 rounded-xl flex gap-3 items-start">
+                                        <span className="text-violet-400 font-bold text-sm mt-0.5">{idx + 1}</span>
+                                        <span className="flex-1 text-sm text-gray-300 leading-relaxed">{sentence}</span>
+                                        <button onClick={() => playAudio(sentence, lang)} className="shrink-0 text-gray-500 hover:text-violet-400 active:scale-90 transition-all">
+                                            <Volume2 size={14} />
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
 
-                            <div className="bg-indigo-50 p-4 rounded-lg border-2 border-indigo-200 relative overflow-hidden">
-                                <div className="relative z-10">
-                                    <h3 className="font-black text-xs uppercase tracking-widest text-indigo-400 mb-1">Vibe Check ✨</h3>
-                                    <p className="font-bold text-sm leading-relaxed">{result.vibe_check_note}</p>
-                                </div>
-                            </div>
+                        {/* Vibe Check */}
+                        <div className="bg-gradient-to-br from-violet-500/10 to-blue-500/5 border border-violet-500/15 p-4 rounded-xl">
+                            <h3 className="text-[10px] uppercase tracking-[0.2em] text-violet-400 font-semibold mb-2 flex items-center gap-1.5">
+                                ✨ Vibe Check
+                            </h3>
+                            <p className="text-sm text-gray-300 leading-relaxed">{result.vibe_check_note}</p>
                         </div>
                     </div>
                 </div>

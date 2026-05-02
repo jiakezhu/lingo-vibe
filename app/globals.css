@@ -1,50 +1,200 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fffcf2;
-  --foreground: #111827;
+  --background: #0a0a0f;
+  --foreground: #e8e6e3;
+  --surface: #141420;
+  --surface-2: #1c1c2e;
+  --accent: #a78bfa;
+  --accent-2: #818cf8;
+  --accent-glow: rgba(167, 139, 250, 0.15);
+  --gold: #fbbf24;
+  --border: rgba(167, 139, 250, 0.15);
+  --border-s: rgba(255, 255, 255, 0.06);
+  --muted: #6b7280;
+  --en-color: #60a5fa;
+  --fr-color: #a78bfa;
+  --es-color: #f87171;
 }
 
 @theme {
-  --color-neo-yellow: #facc15;
-  --color-neo-bg: #fffcf2;
-  --color-neo-black: #111827;
+  --color-accent: #a78bfa;
+  --color-accent-2: #818cf8;
+  --color-surface: #141420;
+  --color-surface-2: #1c1c2e;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Base custom classes to support UI */
-.neo-shadow {
-  box-shadow: 4px 4px 0px #111827;
+/* ─── Glassmorphism Cards ─── */
+.glass-card {
+  background: rgba(20, 20, 32, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  transition: all 0.3s ease;
 }
 
-.neo-shadow-sm {
-  box-shadow: 2px 2px 0px #111827;
+.glass-card:hover {
+  border-color: rgba(167, 139, 250, 0.3);
+  box-shadow: 0 8px 32px rgba(167, 139, 250, 0.08);
 }
 
-.neo-border {
-  border: 3px solid #111827;
+/* ─── Gradient Accents ─── */
+.gradient-text {
+  background: linear-gradient(135deg, #a78bfa, #818cf8, #60a5fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* 3D Flip Utilities */
-.perspective-1000 {
-  perspective: 1000px;
+.gradient-bg {
+  background: linear-gradient(135deg, #a78bfa, #818cf8);
 }
 
-.preserve-3d {
-  transform-style: preserve-3d;
+.gradient-border {
+  position: relative;
+  border: 1px solid transparent;
+  background-clip: padding-box;
 }
 
-.backface-hidden {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(167,139,250,0.3), rgba(96,165,250,0.1));
+  z-index: -1;
 }
 
-.rotate-y-180 {
-  transform: rotateY(180deg);
+/* ─── Buttons ─── */
+.btn-primary {
+  background: linear-gradient(135deg, #a78bfa, #818cf8);
+  color: white;
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 12px 24px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 15px rgba(167, 139, 250, 0.25);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(167, 139, 250, 0.35);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  font-weight: 500;
+  border-radius: 12px;
+  padding: 12px 24px;
+  transition: all 0.25s ease;
+}
+
+.btn-ghost:hover {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+}
+
+/* ─── Input Fields ─── */
+.input-field {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: var(--foreground);
+  font-weight: 500;
+  transition: all 0.25s ease;
+  outline: none;
+}
+
+.input-field::placeholder {
+  color: var(--muted);
+}
+
+.input-field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* ─── Language Badges ─── */
+.lang-badge-en { background: rgba(96, 165, 250, 0.12); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.2); }
+.lang-badge-fr { background: rgba(167, 139, 250, 0.12); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.2); }
+.lang-badge-es { background: rgba(248, 113, 113, 0.12); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.2); }
+
+/* ─── 3D Flip Utilities ─── */
+.perspective-1000 { perspective: 1000px; }
+.preserve-3d { transform-style: preserve-3d; }
+.backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.rotate-y-180 { transform: rotateY(180deg); }
+
+/* ─── Animations ─── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(167, 139, 250, 0.2); }
+  50% { box-shadow: 0 0 0 8px rgba(167, 139, 250, 0); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface-2) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ─── Background Pattern ─── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse at 20% 0%, rgba(167, 139, 250, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(96, 165, 250, 0.06) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Spinner ─── */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
